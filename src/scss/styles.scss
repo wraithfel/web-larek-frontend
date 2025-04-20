@@ -19,3 +19,13 @@
 
 @use "variables" as *;
 @use "mixins";
+/* Скрываем все модалки, пока не покажет JS */
+.modal {
+    display: none !important;
+  }
+  
+  /* Когда JS открывает модалку, вы должны добавить класс, скажем, .modal_active_js,
+     и показать её: */
+  .modal.modal_active_js {
+    display: block !important;
+  }

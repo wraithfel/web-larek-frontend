@@ -1,31 +1,32 @@
 import {IEvents} from '../events';
 import { ProductViewModel } from '../../../types';
 import { cloneTemplate } from '../../../utils/utils';
+import {ProductCard} from './ProductCard'
 
-
-export class ProductListView{
-    constructor(private container:HTMLElement, private event : IEvents){
-        event.on('products:loaded', this.render.bind(this))
+export class ProductListView {
+    private cards = new Map<string, ProductCard>();
+  
+    constructor(
+      private container: HTMLElement,
+      private bus: IEvents
+    ) {
+      this.bus.on('products:loaded', this.onProductsLoaded.bind(this));
+      this.bus.on('product:updated', this.onProductUpdated.bind(this));
     }
-
-    render(items: ProductViewModel[]){
-        this.container.innerHTML = "";
-        items.forEach(p => {
-            // клонируем ваш <template id="card-catalog">
-        const card = cloneTemplate<HTMLButtonElement>('#card-catalog');
-        card.dataset.id = p.id;
-        card.querySelector<HTMLSpanElement>('.card__category')!.textContent = p.category;
-        card.querySelector<HTMLHeadingElement>('.card__title')!.textContent    = p.title;
-        card.querySelector<HTMLImageElement>('.card__image')!.src              = p.image;
-        card.querySelector<HTMLSpanElement>('.card__price')!.textContent       =
-        p.price !== null ? `${p.price} синапсов` : '—';
-
-      // если понадобится менять класс для inBasket — здесь:
-      if (p.inBasket) card.classList.add('card_in-basket');
-
-      this.container.append(card);
-    })
-
+  
+    private onProductsLoaded(items: ProductViewModel[]) {
+      this.container.innerHTML = '';
+      this.cards.clear();
+      items.forEach(item => {
+        const card = new ProductCard(item, this.bus);
+        this.cards.set(item.id, card);
+        this.container.append(card.el);
+      });
     }
-
-}
+  
+    private onProductUpdated({ id, inBasket }: { id: string; inBasket: boolean }) {
+      const card = this.cards.get(id);
+      if (card) card.update({ ...card['data'], inBasket });
+    }
+  }
+  

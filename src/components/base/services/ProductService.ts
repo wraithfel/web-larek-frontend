@@ -21,4 +21,13 @@ export class ProductService{
         
         this.event.emit('products:loaded', items)
     }
+
+    async getByID(id: string){
+        const res = await this.api.get(`/product/${id}`) as ApiProduct;
+        const item: ProductViewModel = {...res,
+            image: `${CDN_URL}${res.image}`, 
+            inBasket:false};
+        
+        return item
+    }
 }

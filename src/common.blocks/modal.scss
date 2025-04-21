@@ -2,16 +2,22 @@
 @use "mixins";
 
 .modal {
-  @include mixins.sublayer;
-  // height: max-content;
-  position: absolute;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
   display: none;
   justify-content: center;
+  align-items: center;
   background-color: $overlayBackground;
   z-index: 100;
-  padding-top: 5vh;
-  padding-bottom: 5vh;
+  padding: 5vh 0;
+
   box-sizing: border-box;
+  /* у модалки НЕ ДОЛЖНО быть прокрутки */
+  overflow: hidden;
 
   &_active {
     display: flex;
@@ -22,12 +28,13 @@
     @include mixins.flex(column);
     gap: $defaultPadding;
     background-color: $background;
-    // min-height: 90vmin;
     border-radius: 3rem;
     box-sizing: border-box;
     position: relative;
+    /* удаляем ограничения по высоте и прокрутку */
+    max-height: none;
+    overflow: visible;
   }
-
   &__content {
     flex-grow: 1;
   }

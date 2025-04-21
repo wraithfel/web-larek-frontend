@@ -1,4 +1,3 @@
-// src/index.ts
 import './scss/styles.scss';
 
 import { Api } from './components/base/api';
@@ -7,38 +6,39 @@ import { API_URL } from './utils/constants';
 
 import { ProductService } from './components/base/services/ProductService';
 import { BasketService }  from './components/base/services/BasketService';
+import { OrderService }   from './components/base/services/OrderService';
 
 import { ProductListView }    from './components/base/view/ProductListView';
-import { ProductPreviewView }  from './components/base/view/ProductPreviewView';
-import { BasketView }          from './components/base/view/BasketView';
-
+import { ProductPreviewView } from './components/base/view/ProductPreviewView';
+import { BasketView }         from './components/base/view/BasketView';
+import { CheckoutView }       from './components/base/view/CheckoutView';
 import type { ProductViewModel } from './types';
 
-// 1. Инициализируем API и шину
+// --- инфраструктура ---
 const api = new Api(API_URL);
 const bus = new EventEmitter();
 
-// 2. Сервисы
+// --- сервисы ---
 const productService = new ProductService(api, bus);
 const basketService  = new BasketService(bus);
+const orderService   = new OrderService(api);
 
-// 3. Список товаров
+// --- список товаров ---
 const galleryEl = document.querySelector('.gallery')! as HTMLElement;
 new ProductListView(galleryEl, bus);
 productService.getAll();
 
-// 4. Превью-модалка
+// --- превью товара ---
 const previewView = new ProductPreviewView(bus);
+bus.on<{ productId: string }>('product:selected', ({ productId }) =>
+  previewView.show(productId, productService)
+);
 
-// 5. Корзина
+// --- корзина ---
 new BasketView(bus, basketService);
 
-// 6. Обработка события из превью или списка: добавить/удалить из корзины
-bus.on<ProductViewModel>('product:toggleBasket', product => {
-  basketService.toggle(product);
-});
+// события от превью/карточек о добавлении‑удалении
+bus.on<ProductViewModel>('product:toggleBasket', p => basketService.toggle(p));
 
-// 7. Показ превью по клику на карточку
-bus.on<{ productId: string }>('product:selected', ({ productId }) => {
-  previewView.show(productId, productService);
-});
+// --- оформление заказа ---
+new CheckoutView(bus, basketService, orderService);

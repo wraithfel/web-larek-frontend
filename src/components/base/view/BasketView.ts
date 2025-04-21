@@ -55,6 +55,7 @@ export class BasketView {
     const orderBtn = basketEl.querySelector<HTMLButtonElement>('.basket__button')!;
     orderBtn.disabled = items.length === 0;
     orderBtn.addEventListener('click', () => {
+      this.modal.close();
       this.bus.emit('basket:checkout');
     });
 
